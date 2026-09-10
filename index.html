@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMK Barbershop</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav__interior">
+      <a class="marca" href="index.html">
+        <img src="assets/logo.png" alt="FMK Barbershop">
+      </a>
+      <div class="nav__links">
+        <!-- Se completa por JS según haya o no sesión -->
+        <span class="nav__usuario oculto" id="nav-usuario">Hola, <span id="nombre-usuario"></span></span>
+        <button class="nav__link activo" id="nav-reservar">Reservar turno</button>
+        <button class="nav__link" id="nav-tarjeta">Mi tarjeta</button>
+        <button class="nav__link" id="nav-tienda">Tienda</button>
+        <button class="nav__link" id="nav-cursos">Cursos</button>
+        <button class="nav__link" id="btn-abrir-login">Iniciar sesión</button>
+        <button class="nav__link nav__salir oculto" id="btn-salir">Cerrar sesión</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="envoltorio">
+
+    <div class="hero">
+      <h1>FMK Barbershop</h1>
+      <p class="texto-tenue">Reserva tu turno en fmkbarbershop, suma sellos en tu tarjeta de fidelidad y gana premios. Además te podes pasar por la tienda, no te vas a arrepentir!!</p>
+    </div>
+
+    <!-- GALERÍA DE VIDEOS -->
+    <section class="galeria-videos">
+      <div class="galeria-videos__cabecera">
+        <h2>Mirá cómo trabajamos</h2>
+        <p class="texto-tenue">Cortes reales, hechos en FMK Barbershop.</p>
+      </div>
+      <div class="galeria-videos__slider" id="galeria-videos-slider">
+        <div class="video-card activo">
+          <video src="assets/videos/corte-1.mp4" poster="assets/videos/corte-1.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
+        </div>
+        <div class="video-card">
+          <video src="assets/videos/corte-2.mp4" poster="assets/videos/corte-2.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
+        </div>
+        <div class="video-card">
+          <video src="assets/videos/corte-3.mp4" poster="assets/videos/corte-3.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESERVAR -->
+    <section id="seccion-reservar">
+      <div class="panel">
+        <div class="panel__cabecera"><h2>Horarios disponibles</h2></div>
+        <div class="fila-campos filtro-horarios">
+          <div class="campo">
+            <label for="filtro-fecha">Filtrar por día</label>
+            <input type="date" id="filtro-fecha">
+          </div>
+          <button type="button" class="btn btn--fantasma" id="btn-limpiar-filtro" style="height:fit-content">Ver todos</button>
+        </div>
+        <div class="horarios-botones" id="horarios-disponibles"></div>
+        <div class="paginacion" id="paginacion-horarios"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__cabecera"><h2>Mis turnos</h2></div>
+        <div id="candado-turnos" class="candado-aviso oculto">
+          Iniciá sesión para ver y gestionar tus turnos.
+          <button class="btn btn--chico btn--violeta" id="btn-login-turnos">Iniciar sesión</button>
+        </div>
+        <div id="mis-turnos"></div>
+      </div>
+    </section>
+
+    <!-- TARJETA -->
+    <section id="seccion-tarjeta" class="oculto">
+      <div id="candado-tarjeta" class="candado-aviso oculto">
+        Iniciá sesión para ver tu tarjeta de fidelidad.
+        <button class="btn btn--chico btn--violeta" id="btn-login-tarjeta">Iniciar sesión</button>
+      </div>
+      <div id="contenido-tarjeta">
+        <div class="tarjeta-fidelidad">
+          <div class="tarjeta-fidelidad__titulo">
+            <h2 style="margin:0">Tarjeta de fidelidad</h2>
+          </div>
+          <div class="sellos-grid" id="sellos-grid"></div>
+          <div class="tarjeta-fidelidad__stats">
+            <div class="stat">
+              <span class="stat__num" id="stat-cortes">0</span>
+              <span class="stat__label">Cortes totales</span>
+            </div>
+            <div class="stat">
+              <span class="stat__num" id="stat-gratis">0</span>
+              <span class="stat__label">Cortes gratis disponibles</span>
+            </div>
+          </div>
+          <p id="nota-tarjeta" class="mt-1" style="position:relative;"></p>
+        </div>
+        <p class="texto-tenue mt-1">Cada 10 sellos ganás un corte gratis. Cada 3 cortes hay una recompensa mínima de regalo.</p>
+      </div>
+    </section>
+
+    <!-- TIENDA -->
+    <section id="seccion-tienda" class="oculto">
+      <div class="panel">
+        <div class="panel__cabecera"><h2>Tienda</h2></div>
+        <div class="grilla grilla--3" id="lista-productos-cliente"></div>
+      </div>
+    </section>
+
+    <!-- CURSOS -->
+    <section id="seccion-cursos" class="oculto">
+      <div class="panel panel--cursos">
+        <span class="badge-proximamente">Próximamente</span>
+        <h2>Cursos FMK</h2>
+        <p class="texto-tenue">Estamos preparando cursos de barbería para que aprendas las técnicas que usamos en FMK Barbershop. Muy pronto vas a poder anotarte desde acá.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE LOGIN / REGISTRO -->
+  <div class="modal-fondo oculto" id="modal-auth">
+    <div class="modal-caja">
+      <button class="modal-cerrar" id="modal-cerrar" aria-label="Cerrar">&times;</button>
+
+      <div class="auth-logo">
+        <img src="assets/logo.png" alt="FMK Barbershop">
+      </div>
+
+      <div class="tabs">
+        <button id="tab-login" class="activo" type="button">Iniciar sesión</button>
+        <button id="tab-registro" type="button">Registrarme</button>
+      </div>
+
+      <!-- LOGIN -->
+      <form id="form-login">
+        <div id="mensaje-login" class="mensaje"></div>
+        <div class="campo">
+          <label for="login-usuario">Email o DNI</label>
+          <input type="text" id="login-usuario" required autocomplete="username">
+        </div>
+        <div class="campo campo-password">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" required autocomplete="current-password">
+          <button type="button" class="btn-ojo" data-toggle="login-password" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <button type="submit" class="btn btn--violeta" style="width:100%">Entrar</button>
+        <button type="button" class="link-olvide" id="btn-olvide">Olvidé mi contraseña</button>
+      </form>
+
+      <!-- OLVIDÉ MI CONTRASEÑA -->
+      <form id="form-olvide" class="oculto form-olvide">
+        <div id="mensaje-olvide" class="mensaje"></div>
+        <p class="modal-aviso" style="margin-top:0">Ingresá el email de tu cuenta y te mandamos un link para crear una contraseña nueva.</p>
+        <div class="campo">
+          <label for="olvide-email">Email</label>
+          <input type="email" id="olvide-email" required>
+        </div>
+        <button type="submit" class="btn btn--violeta" style="width:100%">Enviar link</button>
+        <button type="button" class="link-olvide" id="btn-volver-login">Volver a iniciar sesión</button>
+      </form>
+
+      <!-- REGISTRO -->
+      <form id="form-registro" class="oculto">
+        <div id="mensaje-registro" class="mensaje"></div>
+
+        <div class="campo">
+          <label for="reg-nombre">Nombre completo</label>
+          <input type="text" id="reg-nombre" required>
+        </div>
+
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="reg-email">Email</label>
+            <input type="email" id="reg-email" required autocomplete="email">
+          </div>
+          <div class="campo">
+            <label for="reg-dni">DNI</label>
+            <input type="text" id="reg-dni" required>
+          </div>
+        </div>
+
+        <div class="fila-campos">
+          <div class="campo campo-password">
+            <label for="reg-password">Contraseña</label>
+            <input type="password" id="reg-password" minlength="6" required autocomplete="new-password">
+            <button type="button" class="btn-ojo" data-toggle="reg-password" aria-label="Mostrar contraseña">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="campo campo-password">
+            <label for="reg-password-confirmar">Confirmar contraseña</label>
+            <input type="password" id="reg-password-confirmar" minlength="6" required autocomplete="new-password">
+            <button type="button" class="btn-ojo" data-toggle="reg-password-confirmar" aria-label="Mostrar contraseña">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="reg-username">Usuario (opcional)</label>
+          <input type="text" id="reg-username">
+        </div>
+
+        <button type="submit" class="btn btn--violeta" style="width:100%">Crear cuenta</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer__interior">
+      <div class="footer__marca">
+        <img src="assets/logo.png" alt="FMK Barbershop">
+        <strong>FMK BARBERSHOP</strong>
+      </div>
+      <span class="footer__nota">© <span id="anio"></span> FMK Barbershop. Todos los derechos reservados.</span>
+    </div>
+  </footer>
+
+  <!-- Modal de confirmación (reemplaza los confirm() nativos) -->
+  <div class="modal-fondo oculto" id="modal-confirmar">
+    <div class="modal-caja modal-caja--chica">
+      <h3 id="confirmar-titulo">Confirmar turno</h3>
+      <p class="modal-aviso" id="confirmar-mensaje"></p>
+      <div class="modal-confirmar__acciones">
+        <button type="button" class="btn btn--fantasma" id="confirmar-no">No</button>
+        <button type="button" class="btn btn--violeta" id="confirmar-si">Sí</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de compra: elegir forma de pago y entrega antes de ir a WhatsApp -->
+  <div class="modal-fondo oculto" id="modal-compra">
+    <div class="modal-caja">
+      <button class="modal-cerrar" id="modal-compra-cerrar" aria-label="Cerrar">&times;</button>
+      <h2 style="margin-top:0;">Comprar</h2>
+      <p class="modal-aviso" id="compra-producto-nombre" style="text-align:left; margin-top:0;"></p>
+      <form id="form-compra">
+        <div class="campo">
+          <label for="compra-cantidad">Cantidad</label>
+          <input type="number" id="compra-cantidad" min="1" step="1" value="1" required>
+        </div>
+        <p class="modal-aviso compra-total" id="compra-total" style="text-align:left;"></p>
+        <div class="campo">
+          <label>Forma de pago</label>
+          <div class="fila-campos">
+            <label class="campo-check"><input type="radio" name="compra-pago" value="Efectivo" checked> Efectivo</label>
+            <label class="campo-check"><input type="radio" name="compra-pago" value="Transferencia"> Transferencia</label>
+            <label class="campo-check"><input type="radio" name="compra-pago" value="Mercado Pago"> Mercado Pago</label>
+          </div>
+        </div>
+        <div class="campo">
+          <label>Entrega</label>
+          <div class="fila-campos">
+            <label class="campo-check"><input type="radio" name="compra-envio" value="sin" checked> Retiro en el local</label>
+            <label class="campo-check"><input type="radio" name="compra-envio" value="con"> Envío a domicilio</label>
+          </div>
+        </div>
+        <div class="campo oculto" id="compra-direccion-campo">
+          <label for="compra-direccion">Dirección de envío</label>
+          <input type="text" id="compra-direccion" placeholder="Calle, número, localidad">
+        </div>
+        <button type="submit" class="btn btn--violeta" style="width:100%">Confirmar compra por WhatsApp</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de aviso (reemplaza los alert() nativos) -->
+  <div class="modal-fondo oculto" id="modal-aviso-general">
+    <div class="modal-caja modal-caja--chica">
+      <p class="modal-aviso" id="aviso-general-mensaje" style="margin-bottom: 1.2rem;"></p>
+      <button type="button" class="btn btn--violeta" id="aviso-general-cerrar" style="width:100%">Aceptar</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/cliente.js"></script>
+  <script>document.getElementById('anio').textContent = new Date().getFullYear();</script>
+</body>
+</html>
