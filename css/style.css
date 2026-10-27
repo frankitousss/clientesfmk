@@ -24,6 +24,12 @@
 
   --radio: 3px;
   --sombra: 0 18px 40px rgba(0, 0, 0, 0.45);
+
+  /* variables que cambian entre modo oscuro y claro */
+  --nav-fondo: rgba(10, 10, 11, 0.92);
+  --modal-fondo: rgba(10, 10, 11, 0.78);
+  --sobre-violeta: #0a0a0b;   /* color del texto sobre botones violetas */
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -49,7 +55,7 @@ body::before {
   pointer-events: none;
   z-index: 0;
   opacity: 0.035;
-  background-image: radial-gradient(#f3efe6 1px, transparent 1px);
+  background-image: radial-gradient(var(--hueso) 1px, transparent 1px);
   background-size: 3px 3px;
 }
 
@@ -94,7 +100,7 @@ main.envoltorio {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(10, 10, 11, 0.92);
+  background: var(--nav-fondo);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--negro-borde);
 }
@@ -197,13 +203,13 @@ main.envoltorio {
 .btn--violeta {
   background: var(--violeta);
   border-color: var(--violeta);
-  color: #0a0a0b;
+  color: var(--sobre-violeta);
 }
 
 .btn--violeta:hover {
   background: var(--violeta-fuerte);
   border-color: var(--violeta-fuerte);
-  color: var(--hueso);
+  color: #fff;
 }
 
 .btn--fantasma {
@@ -368,7 +374,7 @@ main.envoltorio {
 
 .tabs button.activo {
   background: var(--violeta);
-  color: #0a0a0b;
+  color: var(--sobre-violeta);
 }
 
 .rol-toggle {
@@ -399,7 +405,7 @@ main.envoltorio {
 /* ---------- Tarjeta de fidelidad ---------- */
 
 .tarjeta-fidelidad {
-  background: linear-gradient(155deg, var(--negro-panel), #0a0a0b 70%);
+  background: linear-gradient(155deg, var(--negro-panel), var(--negro) 70%);
   border: 1px solid var(--violeta);
   border-radius: 10px;
   padding: 1.6rem;
@@ -451,7 +457,7 @@ main.envoltorio {
   border-style: solid;
   border-color: var(--violeta);
   background: var(--violeta);
-  color: #0a0a0b;
+  color: var(--sobre-violeta);
 }
 
 .tarjeta-fidelidad__stats {
@@ -693,7 +699,7 @@ main.envoltorio {
 .modal-fondo {
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 11, 0.78);
+  background: var(--modal-fondo);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
@@ -860,7 +866,7 @@ main.envoltorio {
 .panel--cursos {
   text-align: center;
   padding: 3.2rem 1.6rem;
-  background: linear-gradient(155deg, var(--negro-panel), #0a0a0b 70%);
+  background: linear-gradient(155deg, var(--negro-panel), var(--negro) 70%);
   border-color: var(--violeta);
 }
 
@@ -991,10 +997,10 @@ main.envoltorio {
 .hora-btn--elegida {
   background: var(--violeta);
   border-color: var(--violeta);
-  color: #0a0a0b;
+  color: var(--sobre-violeta);
 }
 
-.hora-btn--elegida small { color: #0a0a0b; }
+.hora-btn--elegida small { color: var(--sobre-violeta); }
 
 .horas-grilla .vacio { grid-column: 1 / -1; }
 
@@ -1094,3 +1100,42 @@ main.envoltorio {
   padding: 0.45rem 0.6rem;
   font-size: 0.82rem;
 }
+
+
+/* ---------- Modo claro ---------- */
+
+:root[data-theme="light"] {
+  --negro: #f5f2ea;          /* fondo de la página */
+  --negro-panel: #ffffff;    /* paneles y tarjetas */
+  --negro-borde: #ddd8cb;
+  --hueso: #17171a;          /* texto principal */
+  --hueso-tenue: #5d5a52;    /* texto secundario */
+  --violeta: #7c3aed;
+  --violeta-fuerte: #5b21b6;
+  --violeta-suave: rgba(124, 58, 237, 0.10);
+  --exito: #15803d;
+  --peligro: #dc2626;
+  --sombra: 0 14px 32px rgba(40, 30, 60, 0.15);
+
+  --nav-fondo: rgba(245, 242, 234, 0.92);
+  --modal-fondo: rgba(23, 23, 26, 0.55);
+  --sobre-violeta: #ffffff;
+  color-scheme: light;
+}
+
+:root[data-theme="light"] body::before { opacity: 0.05; }
+
+/* Botón para cambiar de modo (en la barra de arriba) */
+.nav__tema {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  border: 1px solid var(--negro-borde);
+}
+
+.nav__tema:hover { border-color: var(--violeta); color: var(--hueso); }
