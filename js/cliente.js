@@ -397,105 +397,213 @@ secciones.forEach((s) => {
 // RESERVAR TURNO
 // ============================================================
 
-let horariosCargados = []; // todos los horarios disponibles (sin filtrar), para poder filtrar por día sin volver a pedirlos
+let horariosCargados = []; // horarios disponibles de los próximos días (sin filtrar)
+let diaSeleccionado = null; // 'YYYY-MM-DD'
+let horarioSeleccionado = null; // el horario elegido, todavía sin confirmar
+
+const DIAS_VENTANA = 60; // cuántos días hacia adelante se cargan
+const NOMBRES_DIA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const NOMBRES_DIA_LARGO = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const NOMBRES_MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+function fechaDesdeISO(iso) {
+  const [a, m, d] = iso.split('-').map(Number);
+  return new Date(a, m - 1, d);
+}
+
+function fechaAISO(d) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 async function cargarHorariosDisponibles() {
   const cont = document.getElementById('horarios-disponibles');
-  cont.innerHTML = 'Cargando...';
+  cont.innerHTML = '<div class="vacio">Cargando...</div>';
 
   const { fecha: hoy, hora: ahora } = fechaHoraActualLocal();
+  const limite = new Date();
+  limite.setDate(limite.getDate() + DIAS_VENTANA);
+  const hasta = fechaAISO(limite);
 
-  // Además de disponibles, que ya no sean horarios que ya pasaron
-  // (día anterior, o el mismo día pero a una hora que ya pasó).
-  const { data: horarios, error } = await supabaseClient
-    .from('horarios')
-    .select('*, profiles:barbero_id(full_name)')
-    .eq('disponible', true)
-    .or(`fecha.gt.${hoy},and(fecha.eq.${hoy},hora.gte.${ahora})`)
-    .order('fecha', { ascending: true })
-    .order('hora', { ascending: true });
+  document.getElementById('filtro-fecha').min = hoy;
 
-  if (error) {
-    cont.innerHTML = `<div class="mensaje mensaje--error visible">${error.message}</div>`;
-    return;
+  // Supabase devuelve como máximo 1000 filas por consulta, y con la
+  // carga masiva de horarios puede haber más: se piden de a tandas.
+  const TAM = 1000;
+  let desdeFila = 0;
+  const todos = [];
+
+  while (true) {
+    const { data, error } = await supabaseClient
+      .from('horarios')
+      .select('*, profiles:barbero_id(full_name)')
+      .eq('disponible', true)
+      .lte('fecha', hasta)
+      .or(`fecha.gt.${hoy},and(fecha.eq.${hoy},hora.gte.${ahora})`)
+      .order('fecha', { ascending: true })
+      .order('hora', { ascending: true })
+      .range(desdeFila, desdeFila + TAM - 1);
+
+    if (error) {
+      cont.innerHTML = `<div class="mensaje mensaje--error visible">${error.message}</div>`;
+      return;
+    }
+    todos.push(...data);
+    if (data.length < TAM) break;
+    desdeFila += TAM;
   }
 
-  horariosCargados = horarios;
+  horariosCargados = todos;
+
+  // Si el día elegido ya no tiene horarios (alguien reservó el último,
+  // o se canceló), se limpia la selección.
+  if (horarioSeleccionado && !todos.some((h) => h.id === horarioSeleccionado.id)) {
+    horarioSeleccionado = null;
+  }
+  if (!diaSeleccionado || (!todos.some((h) => h.fecha === diaSeleccionado) && !document.getElementById('filtro-fecha').value)) {
+    diaSeleccionado = todos.length ? todos[0].fecha : null;
+  }
+
+  renderizarDias();
   renderizarHorarios();
+  renderizarResumenReserva();
 }
 
-const HORARIOS_POR_PAGINA = 4;
-let paginaHorarios = 0;
+function etiquetaDia(iso) {
+  const { fecha: hoy } = fechaHoraActualLocal();
+  const manana = new Date();
+  manana.setDate(manana.getDate() + 1);
+  const d = fechaDesdeISO(iso);
+  let arriba = NOMBRES_DIA[d.getDay()];
+  if (iso === hoy) arriba = 'Hoy';
+  else if (iso === fechaAISO(manana)) arriba = 'Mañana';
+  return { arriba, numero: d.getDate(), mes: NOMBRES_MES[d.getMonth()] };
+}
 
-function renderizarHorarios() {
-  const cont = document.getElementById('horarios-disponibles');
-  const paginacion = document.getElementById('paginacion-horarios');
-  const fechaFiltro = document.getElementById('filtro-fecha').value;
+// Tira horizontal con los próximos días que TIENEN horarios libres
+function renderizarDias() {
+  const cont = document.getElementById('dias-selector');
+  cont.innerHTML = '';
 
-  const horarios = fechaFiltro
-    ? horariosCargados.filter((h) => h.fecha === fechaFiltro)
-    : horariosCargados;
+  const porDia = new Map();
+  horariosCargados.forEach((h) => porDia.set(h.fecha, (porDia.get(h.fecha) ?? 0) + 1));
 
-  if (!horarios.length) {
-    cont.innerHTML = fechaFiltro
-      ? '<div class="vacio">No hay horarios disponibles ese día. Probá con otra fecha.</div>'
-      : '<div class="vacio">No hay horarios disponibles por ahora. Volvé más tarde.</div>';
-    paginacion.innerHTML = '';
+  if (!porDia.size) {
+    cont.innerHTML = '<div class="vacio">No hay días con horarios disponibles por ahora. Volvé más tarde.</div>';
     return;
   }
 
-  const totalPaginas = Math.ceil(horarios.length / HORARIOS_POR_PAGINA);
-  if (paginaHorarios >= totalPaginas) paginaHorarios = totalPaginas - 1;
-  if (paginaHorarios < 0) paginaHorarios = 0;
-
-  const inicio = paginaHorarios * HORARIOS_POR_PAGINA;
-  const horariosPagina = horarios.slice(inicio, inicio + HORARIOS_POR_PAGINA);
-
-  cont.innerHTML = '';
-  horariosPagina.forEach((h) => {
+  porDia.forEach((cantidad, fecha) => {
+    const { arriba, numero, mes } = etiquetaDia(fecha);
     const boton = document.createElement('button');
     boton.type = 'button';
-    boton.className = 'horario-btn';
-    boton.textContent = `${formatearFecha(h.fecha)} · ${h.hora.slice(0, 5)} hs`;
-    boton.addEventListener('click', () => {
-      if (!usuarioActual) {
-        abrirModal('login', { tipo: 'reservar', datos: h });
-        return;
-      }
-      reservarTurno(h);
-    });
+    boton.className = 'dia-chip' + (fecha === diaSeleccionado ? ' dia-chip--activo' : '');
+    boton.setAttribute('role', 'option');
+    boton.setAttribute('aria-selected', fecha === diaSeleccionado ? 'true' : 'false');
+    boton.dataset.fecha = fecha;
+    boton.innerHTML = `
+      <span class="dia-chip__dia">${arriba}</span>
+      <span class="dia-chip__numero">${numero}</span>
+      <span class="dia-chip__mes">${mes}</span>
+      <span class="dia-chip__cant">${cantidad} libre${cantidad === 1 ? '' : 's'}</span>
+    `;
+    boton.addEventListener('click', () => seleccionarDia(fecha));
     cont.appendChild(boton);
   });
 
-  if (totalPaginas <= 1) {
-    paginacion.innerHTML = '';
+  // Que el día activo quede a la vista en el celular
+  const activo = cont.querySelector('.dia-chip--activo');
+  if (activo) {
+    const izq = activo.offsetLeft - cont.clientWidth / 2 + activo.clientWidth / 2;
+    cont.scrollTo({ left: Math.max(0, izq), behavior: 'smooth' });
+  }
+}
+
+function seleccionarDia(fecha) {
+  diaSeleccionado = fecha;
+  // Si estaba elegido un horario de otro día, se descarta
+  if (horarioSeleccionado && horarioSeleccionado.fecha !== fecha) horarioSeleccionado = null;
+  // El selector de fecha manual solo queda marcado si coincide con el día activo
+  document.getElementById('filtro-fecha').value = '';
+  renderizarDias();
+  renderizarHorarios();
+  renderizarResumenReserva();
+}
+
+function renderizarHorarios() {
+  const cont = document.getElementById('horarios-disponibles');
+  const titulo = document.getElementById('paso-horas');
+
+  if (!diaSeleccionado) {
+    titulo.textContent = '2 · Elegí el horario';
+    cont.innerHTML = '';
     return;
   }
 
-  paginacion.innerHTML = `
-    <button type="button" class="btn btn--chico" id="btn-pagina-anterior" ${paginaHorarios === 0 ? 'disabled' : ''}>‹ Anterior</button>
-    <span class="paginacion__pagina">Página ${paginaHorarios + 1} de ${totalPaginas}</span>
-    <button type="button" class="btn btn--chico" id="btn-pagina-siguiente" ${paginaHorarios >= totalPaginas - 1 ? 'disabled' : ''}>Siguiente ›</button>
-  `;
+  const d = fechaDesdeISO(diaSeleccionado);
+  titulo.textContent = `2 · Elegí el horario del ${NOMBRES_DIA_LARGO[d.getDay()]} ${formatearFecha(diaSeleccionado)}`;
 
-  document.getElementById('btn-pagina-anterior').addEventListener('click', () => {
-    paginaHorarios--;
-    renderizarHorarios();
-  });
-  document.getElementById('btn-pagina-siguiente').addEventListener('click', () => {
-    paginaHorarios++;
-    renderizarHorarios();
+  const delDia = horariosCargados.filter((h) => h.fecha === diaSeleccionado);
+
+  if (!delDia.length) {
+    cont.innerHTML = '<div class="vacio">No hay horarios disponibles ese día. Probá con otra fecha.</div>';
+    return;
+  }
+
+  // Si hay más de un barbero ese día, se aclara de quién es cada horario
+  const barberos = new Set(delDia.map((h) => h.barbero_id));
+  const mostrarBarbero = barberos.size > 1;
+
+  cont.innerHTML = '';
+  delDia.forEach((h) => {
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    const elegido = horarioSeleccionado?.id === h.id;
+    boton.className = 'hora-btn' + (elegido ? ' hora-btn--elegida' : '');
+    boton.setAttribute('aria-pressed', elegido ? 'true' : 'false');
+    boton.innerHTML = `<span>${h.hora.slice(0, 5)}</span>${mostrarBarbero ? `<small>${h.profiles?.full_name ?? ''}</small>` : ''}`;
+    boton.addEventListener('click', () => {
+      horarioSeleccionado = h;
+      renderizarHorarios();
+      renderizarResumenReserva();
+    });
+    cont.appendChild(boton);
   });
 }
 
-document.getElementById('filtro-fecha').addEventListener('change', () => {
-  paginaHorarios = 0;
-  renderizarHorarios();
+// Barra que deja bien claro QUÉ turno se está por reservar
+function renderizarResumenReserva() {
+  const caja = document.getElementById('reserva-resumen');
+  if (!horarioSeleccionado) {
+    caja.classList.add('oculto');
+    return;
+  }
+  const h = horarioSeleccionado;
+  const d = fechaDesdeISO(h.fecha);
+  const barbero = h.profiles?.full_name ? ` · con ${h.profiles.full_name}` : '';
+  document.getElementById('reserva-resumen-texto').textContent =
+    `${NOMBRES_DIA_LARGO[d.getDay()]} ${formatearFecha(h.fecha)} · ${h.hora.slice(0, 5)} hs${barbero}`;
+  caja.classList.remove('oculto');
+}
+
+document.getElementById('btn-reservar-seleccion').addEventListener('click', () => {
+  if (!horarioSeleccionado) return;
+  if (!usuarioActual) {
+    abrirModal('login', { tipo: 'reservar', datos: horarioSeleccionado });
+    return;
+  }
+  reservarTurno(horarioSeleccionado);
 });
-document.getElementById('btn-limpiar-filtro').addEventListener('click', () => {
-  document.getElementById('filtro-fecha').value = '';
-  paginaHorarios = 0;
+
+// Filtro por fecha exacta (para saltar a un día que no está en la tira)
+document.getElementById('filtro-fecha').addEventListener('change', (e) => {
+  const fecha = e.target.value;
+  if (!fecha) return;
+  diaSeleccionado = fecha;
+  if (horarioSeleccionado && horarioSeleccionado.fecha !== fecha) horarioSeleccionado = null;
+  renderizarDias();
   renderizarHorarios();
+  renderizarResumenReserva();
 });
 
 // Número de WhatsApp del barbero (con código de país, sin espacios ni signos).
@@ -526,8 +634,8 @@ async function reservarTurno(horario) {
     return;
   }
 
-  await supabaseClient.from('horarios').update({ disponible: false }).eq('id', horario.id);
-
+  // El horario pasa a "no disponible" solo, por el trigger de la base.
+  horarioSeleccionado = null;
   cargarHorariosDisponibles();
   cargarMisTurnos();
 
@@ -558,7 +666,7 @@ async function cargarMisTurnos() {
     return;
   }
 
-  const hoyStr = new Date().toISOString().slice(0, 10);
+  const hoyStr = fechaHoraActualLocal().fecha;
 
   cont.innerHTML = '';
   turnos.forEach((t) => {

@@ -892,3 +892,141 @@ main.envoltorio {
   color: var(--hueso) !important;
   margin-top: -0.6rem;
 }
+
+
+/* ---------- Reserva de turnos: días, horas y resumen (pensado para celular) ---------- */
+
+.reserva-paso {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hueso-tenue);
+}
+
+.dias-selector {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 0.2rem 0.1rem 0.7rem;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dia-chip {
+  flex: 0 0 auto;
+  min-width: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--negro-borde);
+  border-radius: var(--radio);
+  background: var(--negro);
+  color: var(--hueso);
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.dia-chip:hover { border-color: var(--violeta); }
+
+.dia-chip--activo {
+  border-color: var(--violeta);
+  background: var(--violeta-suave);
+}
+
+.dia-chip__dia { font-size: 0.78rem; color: var(--hueso-tenue); text-transform: uppercase; letter-spacing: 0.05em; }
+.dia-chip__numero { font-family: var(--fuente-display); font-size: 1.7rem; line-height: 1.1; }
+.dia-chip__mes { font-size: 0.78rem; color: var(--hueso-tenue); }
+.dia-chip__cant { margin-top: 0.25rem; font-size: 0.72rem; color: var(--exito); }
+
+.dias-otra-fecha {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin: 0.2rem 0 1.4rem;
+  font-size: 0.9rem;
+  color: var(--hueso-tenue);
+}
+
+.dias-otra-fecha input {
+  background: var(--negro);
+  border: 1px solid var(--negro-borde);
+  color: var(--hueso);
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radio);
+  outline: none;
+}
+
+.dias-otra-fecha input:focus { border-color: var(--violeta); }
+
+.horas-grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.hora-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px; /* zona táctil cómoda en el celular */
+  padding: 0.5rem 0.4rem;
+  border: 1px solid var(--negro-borde);
+  border-radius: var(--radio);
+  background: var(--negro);
+  color: var(--hueso);
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hora-btn small { font-size: 0.68rem; font-weight: 400; color: var(--hueso-tenue); }
+.hora-btn:hover { border-color: var(--violeta); }
+
+.hora-btn--elegida {
+  background: var(--violeta);
+  border-color: var(--violeta);
+  color: #0a0a0b;
+}
+
+.hora-btn--elegida small { color: #0a0a0b; }
+
+.horas-grilla .vacio { grid-column: 1 / -1; }
+
+.reserva-resumen {
+  position: sticky;
+  bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.4rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--violeta);
+  border-radius: var(--radio);
+  background: var(--negro-panel);
+  box-shadow: var(--sombra);
+  z-index: 5;
+}
+
+.reserva-resumen__texto { display: flex; flex-direction: column; gap: 0.1rem; }
+.reserva-resumen__etiqueta { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--hueso-tenue); }
+.reserva-resumen strong { font-size: 1rem; text-transform: capitalize; }
+
+@media (max-width: 620px) {
+  .reserva-resumen { flex-direction: column; align-items: stretch; text-align: center; }
+  .reserva-resumen .btn { width: 100%; padding: 0.8rem; }
+  .horas-grilla { grid-template-columns: repeat(3, 1fr); }
+}
+
+
+/* La galería de videos ahora va al final de la página */
+.galeria-videos {
+  margin-top: 2.8rem;
+  margin-bottom: 2rem;
+}

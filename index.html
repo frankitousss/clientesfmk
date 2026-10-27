@@ -33,38 +33,28 @@
       <p class="texto-tenue">Reserva tu turno en fmkbarbershop, suma sellos en tu tarjeta de fidelidad y gana premios. Además te podes pasar por la tienda, no te vas a arrepentir!!</p>
     </div>
 
-    <!-- GALERÍA DE VIDEOS -->
-    <section class="galeria-videos">
-      <div class="galeria-videos__cabecera">
-        <h2>Mirá cómo trabajamos</h2>
-        <p class="texto-tenue">Cortes reales, hechos en FMK Barbershop.</p>
-      </div>
-      <div class="galeria-videos__slider" id="galeria-videos-slider">
-        <div class="video-card activo">
-          <video src="assets/videos/corte-1.mp4" poster="assets/videos/corte-1.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
-        </div>
-        <div class="video-card">
-          <video src="assets/videos/corte-2.mp4" poster="assets/videos/corte-2.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
-        </div>
-        <div class="video-card">
-          <video src="assets/videos/corte-3.mp4" poster="assets/videos/corte-3.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
-        </div>
-      </div>
-    </section>
-
     <!-- RESERVAR -->
     <section id="seccion-reservar">
       <div class="panel">
-        <div class="panel__cabecera"><h2>Horarios disponibles</h2></div>
-        <div class="fila-campos filtro-horarios">
-          <div class="campo">
-            <label for="filtro-fecha">Filtrar por día</label>
-            <input type="date" id="filtro-fecha">
-          </div>
-          <button type="button" class="btn btn--fantasma" id="btn-limpiar-filtro" style="height:fit-content">Ver todos</button>
+        <div class="panel__cabecera"><h2>Reservá tu turno</h2></div>
+
+        <p class="reserva-paso">1 · Elegí el día</p>
+        <div class="dias-selector" id="dias-selector" role="listbox" aria-label="Días con horarios disponibles"></div>
+        <div class="dias-otra-fecha">
+          <label for="filtro-fecha">¿Buscás otro día?</label>
+          <input type="date" id="filtro-fecha">
         </div>
-        <div class="horarios-botones" id="horarios-disponibles"></div>
-        <div class="paginacion" id="paginacion-horarios"></div>
+
+        <p class="reserva-paso" id="paso-horas">2 · Elegí el horario</p>
+        <div class="horas-grilla" id="horarios-disponibles"></div>
+
+        <div class="reserva-resumen oculto" id="reserva-resumen" aria-live="polite">
+          <div class="reserva-resumen__texto">
+            <span class="reserva-resumen__etiqueta">Tu turno</span>
+            <strong id="reserva-resumen-texto"></strong>
+          </div>
+          <button type="button" class="btn btn--violeta" id="btn-reservar-seleccion">Reservar</button>
+        </div>
       </div>
 
       <div class="panel">
@@ -119,6 +109,25 @@
         <span class="badge-proximamente">Próximamente</span>
         <h2>Cursos FMK</h2>
         <p class="texto-tenue">Estamos preparando cursos de barbería para que aprendas las técnicas que usamos en FMK Barbershop. Muy pronto vas a poder anotarte desde acá.</p>
+      </div>
+    </section>
+
+    <!-- GALERÍA DE VIDEOS -->
+    <section class="galeria-videos">
+      <div class="galeria-videos__cabecera">
+        <h2>Mirá cómo trabajamos</h2>
+        <p class="texto-tenue">Cortes reales, hechos en FMK Barbershop.</p>
+      </div>
+      <div class="galeria-videos__slider" id="galeria-videos-slider">
+        <div class="video-card activo">
+          <video src="assets/videos/corte-1.mp4" poster="assets/videos/corte-1.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
+        </div>
+        <div class="video-card">
+          <video src="assets/videos/corte-2.mp4" poster="assets/videos/corte-2.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
+        </div>
+        <div class="video-card">
+          <video src="assets/videos/corte-3.mp4" poster="assets/videos/corte-3.jpg" muted playsinline preload="metadata" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen"></video>
+        </div>
       </div>
     </section>
 
